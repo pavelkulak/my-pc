@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111311">
+  <title>CFV235 — твоя сборка в 3D</title>
+  <meta name="description" content="Интерактивная сборка Cougar CFV235: общее управление ARGB, питание, вращение вентиляторов и съёмные стеклянные панели.">
+  <link rel="stylesheet" href="./style.css">
+  <script type="importmap">{"imports":{"three":"./vendor/build/three.module.js","three/addons/":"./vendor/examples/jsm/"}}</script>
+</head>
+<body>
+<svg class="icon-defs" aria-hidden="true"><defs>
+ <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8M6.2 5.8a9 9 0 1 0 11.6 0"/></symbol>
+ <symbol id="i-box" viewBox="0 0 24 24"><path d="m4 6 8-3 8 3v12l-8 3-8-3Zm0 0 8 3 8-3M12 9v12"/></symbol>
+ <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+ <symbol id="i-glass" viewBox="0 0 24 24"><path d="M5 3h14v18H5zM8 8l4-3M8 13l8-6"/></symbol>
+ <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1 7M4 4v6h6"/></symbol>
+ <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></symbol>
+ <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+ <symbol id="i-expand" viewBox="0 0 24 24"><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5"/></symbol>
+</defs></svg>
+<header class="header">
+ <a href="./" class="brand" aria-label="CFV235 Studio"><svg><use href="#i-box"/></svg><span>CFV235<span class="brand-divider">/</span><span class="brand-studio">STUDIO</span></span></a>
+ <div class="header-note"><span class="live-dot"></span>Твоя сборка в реальном времени</div>
+ <span class="build-tag">BUILD 01<span>2026</span></span>
+</header>
+<main class="workspace">
+ <section class="viewer" aria-label="Интерактивная 3D-модель компьютера">
+  <div class="viewer-top"><div><p class="eyebrow">ТВОЙ СЛЕДУЮЩИЙ КОМПЬЮТЕР</p><h1>Рассмотри.<br><span>Включи. Настрой.</span></h1></div><span class="model-badge">3D MODEL</span></div>
+  <div id="canvas-host" role="img" aria-label="Модель компьютера. Перетаскивайте для вращения, используйте колесо для приближения. Нажмите на стекло, чтобы снять его."></div>
+  <div id="loading" class="loading"><div class="loader-ring"></div><span id="loading-label">Собираем твою модель…</span><small id="loading-size">Загрузка 3D-сборки</small></div>
+  <div class="viewer-status"><span id="status-dot" class="status-dot"></span><span id="status-text">ПИТАНИЕ ВЫКЛЮЧЕНО</span></div>
+  <div class="viewer-tools"><button id="reset-view" class="icon-button" aria-label="Сбросить ракурс" title="Сбросить ракурс"><svg><use href="#i-reset"/></svg></button><button id="fullscreen" class="icon-button" aria-label="Полноэкранный режим" title="Полноэкранный режим"><svg><use href="#i-expand"/></svg></button></div>
+  <div class="view-presets" aria-label="Ракурс модели"><button class="selected" data-view="hero" aria-pressed="true">Общий</button><button data-view="side" aria-pressed="false">Сбоку</button><button data-view="rear" aria-pressed="false">Сзади</button><button data-view="top" aria-pressed="false">Сверху</button></div>
+  <p class="viewer-help" id="viewer-help">Вращай модель <span>·</span> Приближай <span>·</span> Нажми на стекло</p>
+  <div id="hit-hint" class="hit-hint" hidden>Снять стекло <svg><use href="#i-arrow"/></svg></div>
+ </section>
+ <aside class="controls" aria-label="Управление сборкой">
+  <div class="control-heading"><span class="eyebrow">УПРАВЛЕНИЕ</span><span class="small-index">01—03</span></div>
+  <section class="power-section">
+   <div class="section-title"><span class="number">01</span><h2>Питание</h2><span id="power-label" class="state-label">OFF</span></div>
+   <button id="power" class="power-button" aria-pressed="false" disabled><span class="power-symbol"><svg><use href="#i-power"/></svg></span><span><strong id="power-action">Включить компьютер</strong><small id="power-description">Запусти вентиляторы и подсветку</small></span><svg class="power-arrow"><use href="#i-arrow"/></svg></button>
+  </section>
+  <section class="lighting-section">
+   <div class="section-title"><span class="number">02</span><h2>Подсветка</h2><span class="sync-label"><span></span>SYNC</span></div>
+   <p class="section-description">Один цвет для всей ARGB-системы.</p>
+   <div class="color-heading"><span>Цвет свечения</span><span id="hex-value">#FF9D50</span></div>
+   <div class="palette" aria-label="Цвет подсветки">
+    <button class="swatch selected" style="--swatch:#ff9d50" data-color="#ff9d50" aria-label="Янтарный" aria-pressed="true"><svg><use href="#i-check"/></svg></button>
+    <button class="swatch" style="--swatch:#78e6ff" data-color="#78e6ff" aria-label="Ледяной голубой" aria-pressed="false"><svg><use href="#i-check"/></svg></button>
+    <button class="swatch" style="--swatch:#ba91ff" data-color="#ba91ff" aria-label="Фиолетовый" aria-pressed="false"><svg><use href="#i-check"/></svg></button>
+    <button class="swatch" style="--swatch:#b8ed87" data-color="#b8ed87" aria-label="Зелёный" aria-pressed="false"><svg><use href="#i-check"/></svg></button>
+    <button class="swatch" style="--swatch:#ff6788" data-color="#ff6788" aria-label="Розовый" aria-pressed="false"><svg><use href="#i-check"/></svg></button>
+    <button class="swatch" style="--swatch:#f5f5ff" data-color="#f5f5ff" aria-label="Белый" aria-pressed="false"><svg><use href="#i-check"/></svg></button>
+    <label class="custom-color" title="Свой цвет"><input id="color-picker" type="color" value="#ff9d50" aria-label="Выбрать свой цвет"><span>+</span></label>
+   </div>
+   <div class="brightness-heading"><label for="brightness"><svg><use href="#i-sun"/></svg>Яркость</label><output id="brightness-value" for="brightness">75%</output></div>
+   <input id="brightness" class="range" type="range" min="0" max="100" value="75" aria-label="Общая яркость подсветки">
+   <div class="effect-tabs" aria-label="Режим подсветки"><button data-effect="solid" class="selected" aria-pressed="true">Статичный</button><button data-effect="breathe" aria-pressed="false">Дыхание</button><button data-effect="spectrum" aria-pressed="false">Спектр</button></div>
+   <p class="lighting-note" id="lighting-note">Цвет загорится при включении компьютера.</p>
+  </section>
+  <section class="panels-section">
+   <div class="section-title"><span class="number">03</span><h2>Панели корпуса</h2><svg class="section-icon"><use href="#i-glass"/></svg></div>
+   <div class="panel-row"><div><strong>Боковое стекло</strong><small>Открывает вид на сборку</small></div><button class="panel-toggle" data-panel="side" aria-pressed="false" disabled>Снять<svg><use href="#i-arrow"/></svg></button></div>
+   <div class="panel-row"><div><strong>Переднее стекло</strong><small>Панорамный фронт</small></div><button class="panel-toggle" data-panel="front" aria-pressed="false" disabled>Снять<svg><use href="#i-arrow"/></svg></button></div>
+   <div class="panel-row"><div><strong>Верхняя крышка</strong><small>Доступ к Unity360</small></div><button class="panel-toggle" data-panel="top" aria-pressed="false" disabled>Снять<svg><use href="#i-arrow"/></svg></button></div>
+  </section>
+  <details class="build-details"><summary>Что внутри<span>+</span></summary><dl><div><dt>Корпус</dt><dd>COUGAR CFV235</dd></div><div><dt>Процессор</dt><dd>Intel Core i5-14600KF</dd></div><div><dt>Охлаждение</dt><dd>Thermalright Royal Knight 120</dd></div><div><dt>Плата</dt><dd>Gigabyte B760 Gaming X D4 Gen5</dd></div><div><dt>Память</dt><dd>T-Force Delta RGB · 2 × 16 ГБ</dd></div><div><dt>Видеокарта</dt><dd>PowerColor RX 9070 XT Reaper</dd></div><div><dt>Питание</dt><dd>1stPlayer NGDP 850W</dd></div></dl><p>Общая подсветка: вентиляторы COUGAR, ленты Aurora и память T-Force. Башня и видеокарта — без RGB. SSD пока не добавлен.</p></details>
+ </aside>
+</main>
+<footer class="footer"><span>CFV235 <span class="muted">/</span> Персональная сборка</span><span>Создана по размерам и фото компонентов</span></footer>
+<div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
+<noscript><div class="no-script">Для интерактивной модели включите JavaScript.</div></noscript>
+<script type="module" src="./app.js"></script>
+</body></html>
