@@ -1,1 +1,1 @@
-{"name":"cfv235-pc-studio","version":"1.0.0","private":true,"type":"module","scripts":{"start":"node serve.mjs","check":"node --check dist/app.js && node --check dist/state.js && node validate.mjs"}}
+{"name":"cfv235-pc-studio","version":"1.0.0","private":true,"type":"module","scripts":{"start":"node serve.mjs","check":"node --check dist/app.js && node --check dist/download.js && node validate.mjs && node --experimental-vm-modules check-modules.mjs && node test-download.mjs"}}

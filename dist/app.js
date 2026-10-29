@@ -8,6 +8,7 @@ import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {createState,advancePower,lightLevel,hexColor,clamp} from './state.js';
+import {downloadBinary,verifyGLB} from './download.js';
 
 const $=id=>document.getElementById(id);
 const state=createState();
@@ -24,8 +25,10 @@ const cameraTarget=new THREE.Vector3(0,.247,0);
 
 function fail(error){
  console.error('PC Studio:',error);
+ $('loading').hidden=false;
  $('loading').classList.remove('done');$('loading-label').textContent='Не удалось открыть 3D-модель';
- $('loading-size').textContent='Проверь WebGL и обнови страницу. Нужен современный браузер с аппаратным ускорением.';
+ $('loading-size').textContent=error?.message||'Не удалось загрузить файлы. Попробуй ещё раз.';
+ $('retry-loading').hidden=false;
  document.querySelector('.loader-ring').style.display='none';
 }
 function setPower(){
@@ -60,6 +63,7 @@ function setView(name){
  for(const b of document.querySelectorAll('[data-view]')){const selected=b.dataset.view===name;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));}
 }
 function wireUI(){
+ $('retry-loading').addEventListener('click',()=>location.reload());
  $('power').addEventListener('click',setPower);
  for(const b of document.querySelectorAll('[data-color]'))b.addEventListener('click',()=>setColor(b.dataset.color));
  $('color-picker').addEventListener('input',e=>setColor(e.target.value));
@@ -97,9 +101,25 @@ function init(){
  bloom=new UnrealBloomPass(new THREE.Vector2(1,1),.18,.28,1.25);composer.addPass(bloom);composer.addPass(new OutputPass());
  const resize=()=>{const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};
  new ResizeObserver(resize).observe(host);resize();wireUI();setupPicking();
- const draco=new DRACOLoader();draco.setDecoderPath('./vendor/examples/jsm/libs/draco/gltf/');draco.setDecoderConfig({type:'wasm'});
+ const draco=new DRACOLoader();
  const loader=new GLTFLoader();loader.setDRACOLoader(draco);
- loader.load('./assets/pc-assembly.glb',async gltf=>{
+ async function loadAssembly(){
+  const base=new URL('.',import.meta.url),decoder=new URL('vendor/examples/jsm/libs/draco/gltf/',base);
+  const [data,wrapper,wasm]=await Promise.all([
+   downloadBinary(new URL('assets/pc-assembly.glb',base),{onProgress:event=>{$('loading-size').textContent=`${Math.round(event.loaded/event.total*100)}% · ${(event.loaded/1048576).toFixed(1)} / ${(event.total/1048576).toFixed(1)} МБ`;}}),
+   downloadBinary(new URL('draco_wasm_wrapper.js',decoder)),
+   downloadBinary(new URL('draco_decoder.wasm',decoder))
+  ]);
+  verifyGLB(data);
+  const jsURL=URL.createObjectURL(new Blob([wrapper],{type:'text/javascript'}));
+  const wasmURL=URL.createObjectURL(new Blob([wasm],{type:'application/wasm'}));
+  try{
+   draco.setDecoderPath({js:jsURL,wasm:wasmURL});
+   $('loading-label').textContent='Собираем геометрию…';
+   return await loader.parseAsync(data,new URL('assets/',base).href);
+  }finally{draco.dispose();URL.revokeObjectURL(jsURL);URL.revokeObjectURL(wasmURL);}
+ }
+ loadAssembly().then(async gltf=>{
   try{
    model=gltf.scene;scene.add(model);
    model.traverse(o=>{
@@ -127,10 +147,10 @@ function init(){
    $('loading-label').textContent='Настраиваем свет и стекло…';
    await renderer.compileAsync(scene,camera);
    ready=true;$('power').disabled=false;for(const b of document.querySelectorAll('[data-panel]'))b.disabled=false;
-   $('loading').classList.add('done');setTimeout(()=>{$('loading').hidden=true;},500);draco.dispose();
+   $('loading').classList.add('done');setTimeout(()=>{$('loading').hidden=true;},500);
    announce('Модель готова. Нажмите кнопку питания или выберите панель корпуса.');
   }catch(e){fail(e);}
- },event=>{if(event.lengthComputable)$('loading-size').textContent=`${Math.round(event.loaded/event.total*100)}% · ${(event.total/1048576).toFixed(1)} МБ`;},fail);
+ }).catch(fail);
  renderer.setAnimationLoop(animate);
 }
 
