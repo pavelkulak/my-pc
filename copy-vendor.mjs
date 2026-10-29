@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-const source=path.resolve('../tooth-demo/node_modules/three');
+const source=path.resolve(process.argv[2]||'node_modules/three');
+if(!fs.existsSync(path.join(source,'package.json')))throw new Error('Three.js source not found. Pass its package directory as the first argument. The ready-to-run site already includes dist/vendor.');
 const dest=path.resolve('dist/vendor');
 const seen=new Set();
 function copy(relative){
